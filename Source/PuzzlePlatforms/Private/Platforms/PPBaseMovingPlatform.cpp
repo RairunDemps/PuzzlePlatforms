@@ -32,11 +32,11 @@ void APPBaseMovingPlatform::Move(float DeltaSeconds)
     CurrentTripTime += DeltaSeconds;
 
     CurrentLocation.X = StartLocation.X + (DestinationLocation.X - StartLocation.X) *
-                                              FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
+            FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
     CurrentLocation.Y = StartLocation.Y + (DestinationLocation.Y - StartLocation.Y) *
-                                              FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
+            FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
     CurrentLocation.Z = StartLocation.Z + (DestinationLocation.Z - StartLocation.Z) *
-                                              FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
+            FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
 
     SetActorLocation(CurrentLocation);
 }
