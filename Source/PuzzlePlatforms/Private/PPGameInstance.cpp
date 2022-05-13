@@ -2,26 +2,55 @@
 
 #include "PPGameInstance.h"
 #include "Engine/Engine.h"
+#include "GameFramework/GameModeBase.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Menu/UI/PPMenuWidget.h"
+#include "Blueprint/UserWidget.h"
 
-void UPPGameInstance::Host()
+DEFINE_LOG_CATEGORY_STATIC(LogPPGameInstance, All, All);
+
+UPPGameInstance::UPPGameInstance()
 {
-    if (!GetEngine()) return;
-
-    GetEngine()->AddOnScreenDebugMessage(0, 5, FColor::Red, TEXT("Hosting"));
-
-    if (!GetWorld()) return;
-
-    GetWorld()->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
+    ConstructorHelpers::FClassFinder<UPPMenuWidget> MainMenuBPClass(TEXT("/Game/Menu/UI/WBP_MenuWidget"));
+    if (MainMenuBPClass.Class)
+    {
+        MenuWidgetClass = MainMenuBPClass.Class;
+    }
 }
 
-void UPPGameInstance::Join(FString Address)
+void UPPGameInstance::Init()
 {
-    if (!GetEngine()) return;
+    Super::Init();
+}
 
-    GetEngine()->AddOnScreenDebugMessage(0, 5, FColor::Red, FString::Printf(TEXT("Joining %s"), *Address));
+void UPPGameInstance::HostGame()
+{
+    if (!GetWorld()) return;
 
-    const auto LocalPlayerController = GetFirstLocalPlayerController();
-    if (!LocalPlayerController) return;
+    FString HostingString = FString("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
+    UE_LOG(LogPPGameInstance, Display, TEXT("%s"), *HostingString);
 
-    LocalPlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
+    GetWorld()->ServerTravel(HostingString);
+}
+
+void UPPGameInstance::JoinGame(const FString& Address)
+{
+    if (!GetWorld()) return;
+
+    const auto Controller = GetWorld()->GetFirstPlayerController();
+    if (!Controller) return;
+
+    Controller->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
+}
+
+void UPPGameInstance::LoadMenu()
+{
+    if (!MenuWidgetClass) return;
+
+    MenuWidget = CreateWidget<UPPMenuWidget>(this, MenuWidgetClass);
+    if (!MenuWidget) return;
+
+    MenuWidget->Setup();
+
+    MenuWidget->SetMenuInterface(this);
 }
