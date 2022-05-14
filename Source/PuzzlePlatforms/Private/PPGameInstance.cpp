@@ -1,11 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "PPGameInstance.h"
-#include "Engine/Engine.h"
 #include "GameFramework/GameModeBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Menu/UI/PPMenuWidget.h"
-#include "Blueprint/UserWidget.h"
+#include "Menu/UI/PPGamePauseWidget.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogPPGameInstance, All, All);
 
@@ -16,11 +15,12 @@ UPPGameInstance::UPPGameInstance()
     {
         MenuWidgetClass = MainMenuBPClass.Class;
     }
-}
 
-void UPPGameInstance::Init()
-{
-    Super::Init();
+    ConstructorHelpers::FClassFinder<UPPGamePauseWidget> GamePauseBPClass(TEXT("/Game/Menu/UI/WBP_GamePauseWidget"));
+    if (GamePauseBPClass.Class)
+    {
+        GamePauseWidgetClass = GamePauseBPClass.Class;
+    }
 }
 
 void UPPGameInstance::HostGame()
@@ -28,7 +28,6 @@ void UPPGameInstance::HostGame()
     if (!GetWorld()) return;
 
     FString HostingString = FString("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
-    UE_LOG(LogPPGameInstance, Display, TEXT("%s"), *HostingString);
 
     GetWorld()->ServerTravel(HostingString);
 }
@@ -43,6 +42,16 @@ void UPPGameInstance::JoinGame(const FString& Address)
     Controller->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 }
 
+void UPPGameInstance::LoadMainMenu()
+{
+    if (!GetWorld()) return;
+
+    const auto Controller = GetWorld()->GetFirstPlayerController();
+    if (!Controller) return;
+
+    Controller->ClientTravel("/Game/Menu/MenuLevel", ETravelType::TRAVEL_Absolute);
+}
+
 void UPPGameInstance::LoadMenu()
 {
     if (!MenuWidgetClass) return;
@@ -53,4 +62,16 @@ void UPPGameInstance::LoadMenu()
     MenuWidget->Setup();
 
     MenuWidget->SetMenuInterface(this);
+}
+
+void UPPGameInstance::LoadGamePause()
+{
+    if (!GamePauseWidgetClass) return;
+
+    GamePauseWidget = CreateWidget<UPPGamePauseWidget>(this, GamePauseWidgetClass);
+    if (!GamePauseWidget) return;
+
+    GamePauseWidget->Setup();
+
+    GamePauseWidget->SetMenuInterface(this);
 }

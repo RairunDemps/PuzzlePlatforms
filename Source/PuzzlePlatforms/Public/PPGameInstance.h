@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Menu/PPMenuInterface.h"
-#include "Menu/UI/PPMenuWidget.h"
 #include "PPGameInstance.generated.h"
 
-//class AGameModeBase;
+class UPPMenuWidget;
+class UPPGamePauseWidget;
 
 UCLASS()
 class PUZZLEPLATFORMS_API UPPGameInstance : public UGameInstance, public IPPMenuInterface
@@ -23,14 +23,19 @@ public:
 
     UFUNCTION(Exec)
     void JoinGame(const FString& Address);
+    
+    void LoadMainMenu();
 
     UFUNCTION(BlueprintCallable)
     void LoadMenu();
 
-    virtual void Init() override;
+    UFUNCTION(BlueprintCallable)
+    void LoadGamePause();
 
 private:
     TSubclassOf<UPPMenuWidget> MenuWidgetClass;
+    TSubclassOf<UPPGamePauseWidget> GamePauseWidgetClass;
 
     UPPMenuWidget* MenuWidget;
+    UPPGamePauseWidget* GamePauseWidget;
 };

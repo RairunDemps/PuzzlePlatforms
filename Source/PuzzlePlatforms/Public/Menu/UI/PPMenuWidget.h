@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
-#include "Menu/PPMenuInterface.h"
+#include "Menu/UI/PPBaseWidget.h"
 #include "PPMenuWidget.generated.h"
 
 class UButton;
@@ -13,13 +12,12 @@ class UWidgetSwitcher;
 class UEditableTextBox;
 
 UCLASS()
-class PUZZLEPLATFORMS_API UPPMenuWidget : public UUserWidget
+class PUZZLEPLATFORMS_API UPPMenuWidget : public UPPBaseWidget
 {
     GENERATED_BODY()
 
 public:
-    void SetMenuInterface(IPPMenuInterface* MenuInterfaceInstance);
-    void Setup();
+    void Setup() override;
 
 protected:
     UPROPERTY(meta = (BindWidget))
@@ -44,12 +42,14 @@ protected:
     UButton* CancelButton;
 
     UPROPERTY(meta = (BindWidget))
+    UButton* ExitButton;
+
+    UPROPERTY(meta = (BindWidget))
     UEditableTextBox* IPAddressEditableTextBox;
 
     void NativeOnInitialized() override;
 
 private:
-    IPPMenuInterface* MenuInterface;
     FString DefaultIPAddress = FString("127.0.0.1");
 
     UFUNCTION()
@@ -64,6 +64,6 @@ private:
     UFUNCTION()
     void OnJoinGame();
 
-    void Teardown();
-    APlayerController* GetPlayerController() const;
+    UFUNCTION()
+    void OnExitGame();
 };

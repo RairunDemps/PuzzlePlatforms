@@ -22,4 +22,6 @@ public:
     virtual void HostGame() = 0;
 
     virtual void JoinGame(const FString& Address) = 0;
+
+    virtual void LoadMainMenu() = 0;
 };

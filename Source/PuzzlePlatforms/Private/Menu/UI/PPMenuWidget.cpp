@@ -2,12 +2,13 @@
 
 #include "Menu/UI/PPMenuWidget.h"
 #include "Components/Button.h"
-#include "PPGameInstance.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
 
 void UPPMenuWidget::NativeOnInitialized()
 {
+    Super::NativeOnInitialized();
+
     if (HostButton)
     {
         HostButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnHostGame);
@@ -27,49 +28,18 @@ void UPPMenuWidget::NativeOnInitialized()
     {
         GoButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnJoinGame);
     }
-}
 
-APlayerController* UPPMenuWidget::GetPlayerController() const
-{
-    if (!GetWorld()) return nullptr;
-
-    return GetWorld()->GetFirstPlayerController();
-}
-
-void UPPMenuWidget::SetMenuInterface(IPPMenuInterface* MenuInterfaceInstance)
-{
-    check(MenuInterfaceInstance);
-
-    MenuInterface = MenuInterfaceInstance;
+    if (ExitButton)
+    {
+        ExitButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnExitGame);
+    }
 }
 
 void UPPMenuWidget::Setup()
 {
-    const auto Controller = GetPlayerController();
-    if (!Controller) return;
-    
-    bIsFocusable = true;
-
-    FInputModeUIOnly InputModeData;
-    InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-    InputModeData.SetWidgetToFocus(TakeWidget());
-
-    Controller->SetInputMode(InputModeData);
-    Controller->bShowMouseCursor = true;
+    Super::Setup();
 
     OnShowMenuBanner();
-
-    AddToViewport();
-}
-
-void UPPMenuWidget::Teardown()
-{
-    const auto Controller = GetPlayerController();
-    if (!Controller) return;
-
-    Controller->SetInputMode(FInputModeGameOnly());
-    Controller->bShowMouseCursor = true;
-    RemoveFromViewport();
 }
 
 void UPPMenuWidget::OnHostGame()
@@ -103,4 +73,12 @@ void UPPMenuWidget::OnShowMenuBanner()
     if (!MenuSwitcher || !MenuBanner) return;
 
     MenuSwitcher->SetActiveWidget(MenuBanner);
+}
+
+void UPPMenuWidget::OnExitGame()
+{
+    const auto Controller = GetPlayerController();
+    if (!Controller) return;
+
+    Controller->ConsoleCommand("quit");
 }
