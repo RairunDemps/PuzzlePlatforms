@@ -14,7 +14,8 @@ public class PuzzlePlatforms : ModuleRules
 			"Engine",
 			"InputCore",
 			"HeadMountedDisplay",
-			"UMG"
+			"UMG",
+			"OnlineSubsystem"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
@@ -22,8 +23,8 @@ public class PuzzlePlatforms : ModuleRules
 		PublicIncludePaths.AddRange(new string[]
 		{
 			"PuzzlePlatforms/Public/Platforms",
-			"PuzzlePlatforms/Public/Platforms/Menu",
-			"PuzzlePlatforms/Public/Platforms/Menu/UI"
+			"PuzzlePlatforms/Public/Menu",
+			"PuzzlePlatforms/Public/Menu/UI"
 		});
 	}
 }

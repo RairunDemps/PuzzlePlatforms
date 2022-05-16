@@ -9,6 +9,9 @@
 
 class UPPMenuWidget;
 class UPPGamePauseWidget;
+class FOnlineSessionSearch;
+
+typedef TSharedPtr<class IOnlineSession, ESPMode::ThreadSafe> IOnlineSessionPtr;
 
 UCLASS()
 class PUZZLEPLATFORMS_API UPPGameInstance : public UGameInstance, public IPPMenuInterface
@@ -18,13 +21,11 @@ class PUZZLEPLATFORMS_API UPPGameInstance : public UGameInstance, public IPPMenu
 public:
     UPPGameInstance();
 
-    UFUNCTION(Exec)
-    void HostGame();
+    void HostGame() override;
 
-    UFUNCTION(Exec)
-    void JoinGame(const FString& Address);
+    void JoinGame(const FString& Address) override;
     
-    void LoadMainMenu();
+    void LoadMainMenu() override;
 
     UFUNCTION(BlueprintCallable)
     void LoadMenu();
@@ -32,10 +33,20 @@ public:
     UFUNCTION(BlueprintCallable)
     void LoadGamePause();
 
+	void Init() override;
+
 private:
     TSubclassOf<UPPMenuWidget> MenuWidgetClass;
     TSubclassOf<UPPGamePauseWidget> GamePauseWidgetClass;
 
     UPPMenuWidget* MenuWidget;
     UPPGamePauseWidget* GamePauseWidget;
+
+    IOnlineSessionPtr SessionInterface;
+    TSharedPtr<FOnlineSessionSearch> SearchSettings;
+
+    void CreateSession();
+    void OnCreateSessionComplete(FName SessionName, bool IsSuccessful);
+    void OnDestroySessionComplete(FName SessionName, bool IsSuccessful);
+    void OnFindSessionsComplete(bool IsSuccessful);
 };

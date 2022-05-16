@@ -5,6 +5,11 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Menu/UI/PPMenuWidget.h"
 #include "Menu/UI/PPGamePauseWidget.h"
+#include "OnlineSubsystem.h"
+#include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSessionSettings.h"
+
+const static FName SESSION_NAME = TEXT("My session name");
 
 DEFINE_LOG_CATEGORY_STATIC(LogPPGameInstance, All, All);
 
@@ -23,13 +28,46 @@ UPPGameInstance::UPPGameInstance()
     }
 }
 
+void UPPGameInstance::Init()
+{
+    const auto OnlineSubsystem = IOnlineSubsystem::Get();
+    if (!OnlineSubsystem) return;
+
+    SessionInterface = OnlineSubsystem->GetSessionInterface();
+    if (!SessionInterface.IsValid()) return;
+
+    SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPPGameInstance::OnDestroySessionComplete);
+    SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPPGameInstance::OnCreateSessionComplete);
+    SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPPGameInstance::OnFindSessionsComplete);
+
+    SearchSettings = MakeShareable(new FOnlineSessionSearch());
+    if (!SearchSettings.IsValid()) return;
+
+    SessionInterface->FindSessions(0, SearchSettings.ToSharedRef());
+    UE_LOG(LogPPGameInstance, Warning, TEXT("FindSessions started"));
+}
+
 void UPPGameInstance::HostGame()
 {
-    if (!GetWorld()) return;
+    if (!SessionInterface.IsValid()) return;
 
-    FString HostingString = FString("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
+    const auto NamedSession = SessionInterface->GetNamedSession(SESSION_NAME);
+    if (NamedSession)
+    {
+        UE_LOG(LogPPGameInstance, Warning, TEXT("Session \"%s\" was found."), *SESSION_NAME.ToString());
+        SessionInterface->DestroySession(SESSION_NAME);
+        return;
+    }
 
-    GetWorld()->ServerTravel(HostingString);
+    CreateSession();
+}
+
+void UPPGameInstance::CreateSession()
+{
+    if (!SessionInterface.IsValid()) return;
+
+    FOnlineSessionSettings SessionSettings;
+    SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 }
 
 void UPPGameInstance::JoinGame(const FString& Address)
@@ -74,4 +112,27 @@ void UPPGameInstance::LoadGamePause()
     GamePauseWidget->Setup();
 
     GamePauseWidget->SetMenuInterface(this);
+}
+
+void UPPGameInstance::OnCreateSessionComplete(FName SessionName, bool IsSuccessful)
+{
+    if (!GetWorld() || !IsSuccessful) return;
+
+    FString HostingString = FString("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
+
+    GetWorld()->ServerTravel(HostingString);
+}
+
+void UPPGameInstance::OnDestroySessionComplete(FName SessionName, bool IsSuccessful)
+{
+    if (!IsSuccessful) return;
+
+    CreateSession();
+}
+
+void UPPGameInstance::OnFindSessionsComplete(bool IsSuccessful)
+{
+    if (!IsSuccessful) return;
+
+    UE_LOG(LogPPGameInstance, Warning, TEXT("FindSessions done"));
 }
