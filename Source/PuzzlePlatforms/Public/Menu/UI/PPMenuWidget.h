@@ -23,6 +23,7 @@ public:
 
     void Setup() override;
     void SetServerList(TArray<FString> ServerNames);
+    void SetSelectedIndex(uint32 Index);
 
 protected:
     UPROPERTY(meta = (BindWidget))
@@ -59,6 +60,10 @@ protected:
 
 private:
     FString DefaultIPAddress = FString("127.0.0.1");
+    
+    TSubclassOf<UPPServerRowWidget> ServerRowWidgetClass;
+
+    TOptional<uint32> SelectedIndex;
 
     UFUNCTION()
     void OnHostGame();
@@ -77,6 +82,4 @@ private:
     
     UFUNCTION()
     void OnRefreshServerList();
-
-    TSubclassOf<UPPServerRowWidget> ServerRowWidgetClass;
 };

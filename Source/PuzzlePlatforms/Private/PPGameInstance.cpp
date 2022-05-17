@@ -6,7 +6,6 @@
 #include "Menu/UI/PPMenuWidget.h"
 #include "Menu/UI/PPGamePauseWidget.h"
 #include "OnlineSubsystem.h"
-#include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSessionSettings.h"
 
 const static FName SESSION_NAME = TEXT("My session name");
@@ -36,11 +35,13 @@ void UPPGameInstance::Init()
     SessionInterface = OnlineSubsystem->GetSessionInterface();
     if (!SessionInterface.IsValid()) return;
 
+    SessionSearch = MakeShareable(new FOnlineSessionSearch());
+    if (!SessionSearch.IsValid()) return;
+
     SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPPGameInstance::OnDestroySessionComplete);
     SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPPGameInstance::OnCreateSessionComplete);
     SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPPGameInstance::OnFindSessionsComplete);
-
-    SessionSearch = MakeShareable(new FOnlineSessionSearch());
+    SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UPPGameInstance::OnJoinSessionComplete);
 }
 
 void UPPGameInstance::HostGame()
@@ -50,7 +51,7 @@ void UPPGameInstance::HostGame()
     const auto NamedSession = SessionInterface->GetNamedSession(SESSION_NAME);
     if (NamedSession)
     {
-        UE_LOG(LogPPGameInstance, Warning, TEXT("Session \"%s\" was found."), *SESSION_NAME.ToString());
+        UE_LOG(LogPPGameInstance, Display, TEXT("Session \"%s\" was found."), *SESSION_NAME.ToString());
         SessionInterface->DestroySession(SESSION_NAME);
         return;
     }
@@ -62,7 +63,7 @@ void UPPGameInstance::CreateSession()
 {
     if (!SessionInterface.IsValid()) return;
 
-    UE_LOG(LogPPGameInstance, Warning, TEXT("Creating a session \"%s\"."), *SESSION_NAME.ToString());
+    UE_LOG(LogPPGameInstance, Display, TEXT("Creating a session \"%s\"."), *SESSION_NAME.ToString());
     FOnlineSessionSettings SessionSettings;
     SessionSettings.bIsLANMatch = true;
     SessionSettings.bShouldAdvertise = true;
@@ -70,14 +71,11 @@ void UPPGameInstance::CreateSession()
     SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 }
 
-void UPPGameInstance::JoinGame(const FString& Address)
+void UPPGameInstance::JoinGame(uint32 ServerIndex)
 {
-    if (!GetWorld()) return;
+    if (!SessionInterface.IsValid() || !SessionSearch.IsValid()) return;
 
-    const auto Controller = GetWorld()->GetFirstPlayerController();
-    if (!Controller) return;
-
-    Controller->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
+    SessionInterface->JoinSession(0, SESSION_NAME, SessionSearch->SearchResults[ServerIndex]);
 }
 
 void UPPGameInstance::LoadMainMenu()
@@ -92,7 +90,7 @@ void UPPGameInstance::LoadMainMenu()
 
 void UPPGameInstance::RefreshServerList()
 {
-    if (!SessionSearch.IsValid()) return;
+    if (!SessionInterface.IsValid() || !SessionSearch.IsValid()) return;
 
     SessionSearch->bIsLanQuery = true;
     SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
@@ -106,7 +104,6 @@ void UPPGameInstance::LoadMenu()
     if (!MenuWidget) return;
 
     MenuWidget->Setup();
-
     MenuWidget->SetMenuInterface(this);
 }
 
@@ -118,29 +115,27 @@ void UPPGameInstance::LoadGamePause()
     if (!GamePauseWidget) return;
 
     GamePauseWidget->Setup();
-
     GamePauseWidget->SetMenuInterface(this);
 }
 
 void UPPGameInstance::OnCreateSessionComplete(FName SessionName, bool IsSuccessful)
 {
-    if (!GetWorld() || !SessionInterface.IsValid() || !IsSuccessful) return;
+    if (!GetWorld() || !IsSuccessful) return;
 
     FString HostingString = FString("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
-
     GetWorld()->ServerTravel(HostingString);
 }
 
 void UPPGameInstance::OnDestroySessionComplete(FName SessionName, bool IsSuccessful)
 {
-    if (!SessionInterface.IsValid() || !IsSuccessful) return;
+    if (!IsSuccessful) return;
 
     CreateSession();
 }
 
 void UPPGameInstance::OnFindSessionsComplete(bool IsSuccessful)
 {
-    if (!SessionInterface.IsValid() || !SessionSearch.IsValid() || !IsSuccessful) return;
+    if (!SessionSearch.IsValid() || !IsSuccessful) return;
 
     TArray<FString> ServerNames;
 
@@ -153,4 +148,20 @@ void UPPGameInstance::OnFindSessionsComplete(bool IsSuccessful)
 
     if (!MenuWidget) return;
     MenuWidget->SetServerList(ServerNames);
+}
+
+void UPPGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+{
+    if (!GetWorld() || !SessionInterface.IsValid() || Result != EOnJoinSessionCompleteResult::Success) return;
+
+    FString TravelURL;
+    const bool IsGotConnectionString = SessionInterface->GetResolvedConnectString(SESSION_NAME, TravelURL);
+    if (!IsGotConnectionString) return;
+
+    UE_LOG(LogPPGameInstance, Display, TEXT("%s"), *TravelURL);
+
+    const auto Controller = GetWorld()->GetFirstPlayerController();
+    if (!Controller) return;
+
+    Controller->ClientTravel(TravelURL, ETravelType::TRAVEL_Absolute);
 }

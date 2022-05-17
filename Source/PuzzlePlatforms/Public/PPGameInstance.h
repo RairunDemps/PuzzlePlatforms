@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Menu/PPMenuInterface.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "PPGameInstance.generated.h"
 
 class UPPMenuWidget;
@@ -23,7 +24,7 @@ public:
 
     void HostGame() override;
 
-    void JoinGame(const FString& Address) override;
+    void JoinGame(uint32 ServerIndex) override;
     
     void LoadMainMenu() override;
 
@@ -51,4 +52,5 @@ private:
     void OnCreateSessionComplete(FName SessionName, bool IsSuccessful);
     void OnDestroySessionComplete(FName SessionName, bool IsSuccessful);
     void OnFindSessionsComplete(bool IsSuccessful);
+    void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 };

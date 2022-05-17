@@ -69,10 +69,11 @@ void UPPMenuWidget::OnHostGame()
 
 void UPPMenuWidget::OnJoinGame()
 {
-    if (!MenuInterface) return;
+    if (!MenuInterface || !SelectedIndex.IsSet()) return;
 
+    UE_LOG(LogPPMenuWidget, Display, TEXT("Selected level index is %d"), SelectedIndex.GetValue());
     Teardown();
-    MenuInterface->JoinGame(DefaultIPAddress);
+    MenuInterface->JoinGame(SelectedIndex.GetValue());
 }
 
 void UPPMenuWidget::OnShowJoinBanner()
@@ -110,13 +111,23 @@ void UPPMenuWidget::SetServerList(TArray<FString> ServerNames)
     if (!GetWorld() || !ServerListScrollBox || !ServerRowWidgetClass) return;
 
     ServerListScrollBox->ClearChildren();
+
+    uint32 index = 0;
     for (const auto& ServerName : ServerNames)
     {
         auto ServerRowWidget = CreateWidget<UPPServerRowWidget>(GetWorld(), ServerRowWidgetClass);
         if (!ServerRowWidget) return;
+        
+        ServerRowWidget->SetServerName(FText::FromString(ServerName));
+        ServerRowWidget->Setup(this, index);
+        ++index;
 
         ServerListScrollBox->AddChild(ServerRowWidget);
-
-        ServerRowWidget->SetServerName(FText::FromString(ServerName));
     }
 }
+
+void UPPMenuWidget::SetSelectedIndex(uint32 Index)
+{
+    SelectedIndex = Index;
+}
+
