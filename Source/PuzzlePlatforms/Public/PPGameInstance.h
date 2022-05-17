@@ -19,13 +19,15 @@ class PUZZLEPLATFORMS_API UPPGameInstance : public UGameInstance, public IPPMenu
 	GENERATED_BODY()
 
 public:
-    UPPGameInstance();
+    UPPGameInstance(const FObjectInitializer& ObjectInitializer);
 
     void HostGame() override;
 
     void JoinGame(const FString& Address) override;
     
     void LoadMainMenu() override;
+
+    void RefreshServerList() override;
 
     UFUNCTION(BlueprintCallable)
     void LoadMenu();
@@ -43,7 +45,7 @@ private:
     UPPGamePauseWidget* GamePauseWidget;
 
     IOnlineSessionPtr SessionInterface;
-    TSharedPtr<FOnlineSessionSearch> SearchSettings;
+    TSharedPtr<FOnlineSessionSearch> SessionSearch;
 
     void CreateSession();
     void OnCreateSessionComplete(FName SessionName, bool IsSuccessful);

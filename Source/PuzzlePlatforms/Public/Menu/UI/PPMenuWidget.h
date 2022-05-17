@@ -10,6 +10,8 @@ class UButton;
 class UWidget;
 class UWidgetSwitcher;
 class UEditableTextBox;
+class UScrollBox;
+class UPPServerRowWidget;
 
 UCLASS()
 class PUZZLEPLATFORMS_API UPPMenuWidget : public UPPBaseWidget
@@ -17,7 +19,10 @@ class PUZZLEPLATFORMS_API UPPMenuWidget : public UPPBaseWidget
     GENERATED_BODY()
 
 public:
+    UPPMenuWidget(const FObjectInitializer& ObjectInitializer);
+
     void Setup() override;
+    void SetServerList(TArray<FString> ServerNames);
 
 protected:
     UPROPERTY(meta = (BindWidget))
@@ -45,7 +50,10 @@ protected:
     UButton* ExitButton;
 
     UPROPERTY(meta = (BindWidget))
-    UEditableTextBox* IPAddressEditableTextBox;
+    UButton* RefreshServerListButton;
+
+    UPROPERTY(meta = (BindWidget))
+    UScrollBox* ServerListScrollBox;
 
     void NativeOnInitialized() override;
 
@@ -66,4 +74,9 @@ private:
 
     UFUNCTION()
     void OnExitGame();
+    
+    UFUNCTION()
+    void OnRefreshServerList();
+
+    TSubclassOf<UPPServerRowWidget> ServerRowWidgetClass;
 };

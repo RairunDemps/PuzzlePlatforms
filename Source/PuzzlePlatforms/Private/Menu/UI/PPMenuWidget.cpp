@@ -4,6 +4,18 @@
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
+#include "Components/ScrollBox.h"
+#include "Menu/UI/PPServerRowWidget.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogPPMenuWidget, All, All);
+
+UPPMenuWidget::UPPMenuWidget(const FObjectInitializer& ObjectInitializer) {
+    ConstructorHelpers::FClassFinder<UPPServerRowWidget> ServerRowBPClass(TEXT("/Game/Menu/UI/WBP_ServerRowWidget"));
+    if (ServerRowBPClass.Class)
+    {
+        ServerRowWidgetClass = ServerRowBPClass.Class;
+    }
+}
 
 void UPPMenuWidget::NativeOnInitialized()
 {
@@ -33,6 +45,11 @@ void UPPMenuWidget::NativeOnInitialized()
     {
         ExitButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnExitGame);
     }
+    
+    if (RefreshServerListButton)
+    {
+        RefreshServerListButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnRefreshServerList);
+    }
 }
 
 void UPPMenuWidget::Setup()
@@ -54,17 +71,15 @@ void UPPMenuWidget::OnJoinGame()
 {
     if (!MenuInterface) return;
 
-    const FText& IPAddress = IPAddressEditableTextBox->GetText();
-    const FString& JoinIPAddress = IPAddress.IsEmpty() ? DefaultIPAddress : IPAddress.ToString();
-    
     Teardown();
-    MenuInterface->JoinGame(JoinIPAddress);
+    MenuInterface->JoinGame(DefaultIPAddress);
 }
 
 void UPPMenuWidget::OnShowJoinBanner()
 {
-    if (!MenuSwitcher || !JoinBanner) return;
+    if (!MenuSwitcher || !JoinBanner || !MenuInterface) return;
 
+    MenuInterface->RefreshServerList();
     MenuSwitcher->SetActiveWidget(JoinBanner);
 }
 
@@ -81,4 +96,27 @@ void UPPMenuWidget::OnExitGame()
     if (!Controller) return;
 
     Controller->ConsoleCommand("quit");
+}
+
+void UPPMenuWidget::OnRefreshServerList()
+{
+    if (!MenuInterface) return;
+    
+    MenuInterface->RefreshServerList();
+}
+
+void UPPMenuWidget::SetServerList(TArray<FString> ServerNames)
+{
+    if (!GetWorld() || !ServerListScrollBox || !ServerRowWidgetClass) return;
+
+    ServerListScrollBox->ClearChildren();
+    for (const auto& ServerName : ServerNames)
+    {
+        auto ServerRowWidget = CreateWidget<UPPServerRowWidget>(GetWorld(), ServerRowWidgetClass);
+        if (!ServerRowWidget) return;
+
+        ServerListScrollBox->AddChild(ServerRowWidget);
+
+        ServerRowWidget->SetServerName(FText::FromString(ServerName));
+    }
 }
