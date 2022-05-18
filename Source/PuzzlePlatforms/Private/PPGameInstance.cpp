@@ -32,6 +32,7 @@ void UPPGameInstance::Init()
     const auto OnlineSubsystem = IOnlineSubsystem::Get();
     if (!OnlineSubsystem) return;
 
+    UE_LOG(LogPPGameInstance, Display, TEXT("Online subsystem found - %s"), *OnlineSubsystem->GetSubsystemName().ToString())
     SessionInterface = OnlineSubsystem->GetSessionInterface();
     if (!SessionInterface.IsValid()) return;
 
@@ -65,9 +66,11 @@ void UPPGameInstance::CreateSession()
 
     UE_LOG(LogPPGameInstance, Display, TEXT("Creating a session \"%s\"."), *SESSION_NAME.ToString());
     FOnlineSessionSettings SessionSettings;
-    SessionSettings.bIsLANMatch = true;
+    SessionSettings.bIsLANMatch = false;
     SessionSettings.bShouldAdvertise = true;
     SessionSettings.NumPublicConnections = 2;
+    SessionSettings.bUsesPresence = true;
+    SessionSettings.bUseLobbiesIfAvailable = true;
     SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 }
 
@@ -92,7 +95,9 @@ void UPPGameInstance::RefreshServerList()
 {
     if (!SessionInterface.IsValid() || !SessionSearch.IsValid()) return;
 
-    SessionSearch->bIsLanQuery = true;
+    //SessionSearch->bIsLanQuery = false;
+    SessionSearch->MaxSearchResults = 100;
+    SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
     SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
 }
 

@@ -18,6 +18,8 @@ public class PuzzlePlatforms : ModuleRules
 			"OnlineSubsystem"
 		});
 
+		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
+
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
 		PublicIncludePaths.AddRange(new string[]
