@@ -23,7 +23,6 @@ public:
 
     void Setup() override;
     void SetServerList(TArray<FString> ServerNames);
-    void SetSelectedIndex(uint32 Index);
 
 protected:
     UPROPERTY(meta = (BindWidget))
@@ -82,4 +81,6 @@ private:
     
     UFUNCTION()
     void OnRefreshServerList();
+
+    void OnServerSelected(uint32 Index);
 };

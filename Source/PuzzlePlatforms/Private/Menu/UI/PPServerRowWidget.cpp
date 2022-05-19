@@ -1,10 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Menu/UI/PPServerRowWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
-#include "Menu/UI/PPMenuWidget.h"
+#include "Styling/SlateColor.h"
+
+void UPPServerRowWidget::NativeOnInitialized()
+{
+    Super::NativeOnInitialized();
+
+    if (!SelectServerButton) return;
+    SelectServerButton->OnClicked.AddDynamic(this, &UPPServerRowWidget::OnSelectServerButtonClicked);
+
+    if (!ServerNameTextBlock) return;
+    SelectServerButton->OnHovered.AddDynamic(this, &UPPServerRowWidget::OnSelectServerButtonHovered);
+    SelectServerButton->OnUnhovered.AddDynamic(this, &UPPServerRowWidget::OnSelectServerButtonUnhovered);
+}
 
 void UPPServerRowWidget::SetServerName(const FText& ServerName)
 {
@@ -13,22 +24,38 @@ void UPPServerRowWidget::SetServerName(const FText& ServerName)
 	ServerNameTextBlock->SetText(ServerName);
 }
 
-void UPPServerRowWidget::Setup(UPPMenuWidget* Parent, uint32 Index)
+FText UPPServerRowWidget::GetServerName() const
 {
-    if (!Parent) return;
+    return ServerNameTextBlock->GetText();
+}
 
-    MenuWidget = Parent;
+void UPPServerRowWidget::SetServerIndex(uint32 Index)
+{
     ServerIndex = Index;
+}
 
-    if (SelectServerButton)
-    {
-        SelectServerButton->OnClicked.AddDynamic(this, &UPPServerRowWidget::OnSelectServerButtonClicked);
-    }
+void UPPServerRowWidget::SetSelected(bool IsSelected)
+{
+    IsServerSelected = IsSelected;
+    FColor Color = IsSelected ? FColor::Magenta : FColor::White;
+    ServerNameTextBlock->SetColorAndOpacity(FSlateColor(Color));
 }
 
 void UPPServerRowWidget::OnSelectServerButtonClicked()
 {
-    if (!MenuWidget) return;
+    OnServerSelected.Broadcast(ServerIndex);
+}
 
-    MenuWidget->SetSelectedIndex(ServerIndex);
+void UPPServerRowWidget::OnSelectServerButtonHovered()
+{
+    if (IsServerSelected) return;
+
+    ServerNameTextBlock->SetColorAndOpacity(FSlateColor(FColor::Purple));
+}
+
+void UPPServerRowWidget::OnSelectServerButtonUnhovered()
+{
+    if (IsServerSelected) return;
+
+    ServerNameTextBlock->SetColorAndOpacity(FSlateColor(FLinearColor::White));
 }

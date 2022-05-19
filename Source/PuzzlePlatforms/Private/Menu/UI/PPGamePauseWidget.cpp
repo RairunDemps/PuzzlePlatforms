@@ -6,6 +6,8 @@
 
 void UPPGamePauseWidget::NativeOnInitialized()
 {
+    Super::NativeOnInitialized();
+
     if (ResumeButton)
     {
         ResumeButton->OnClicked.AddDynamic(this, &UPPGamePauseWidget::OnResumeGame);

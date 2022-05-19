@@ -119,15 +119,25 @@ void UPPMenuWidget::SetServerList(TArray<FString> ServerNames)
         if (!ServerRowWidget) return;
         
         ServerRowWidget->SetServerName(FText::FromString(ServerName));
-        ServerRowWidget->Setup(this, index);
+        ServerRowWidget->SetServerIndex(index);
+        ServerRowWidget->OnServerSelected.AddUObject(this, &UPPMenuWidget::OnServerSelected);
         ++index;
 
         ServerListScrollBox->AddChild(ServerRowWidget);
     }
 }
 
-void UPPMenuWidget::SetSelectedIndex(uint32 Index)
+void UPPMenuWidget::OnServerSelected(uint32 Index)
 {
     SelectedIndex = Index;
+
+    for (int i = 0; i < ServerListScrollBox->GetChildrenCount(); ++i)
+    {
+        const auto ServerRowWidget = Cast<UPPServerRowWidget>(ServerListScrollBox->GetChildAt(i));
+        if (!ServerRowWidget) continue;
+
+        bool IsSelected = ServerRowWidget->GetServerIndex() == Index;
+        ServerRowWidget->SetSelected(IsSelected);
+    }
 }
 

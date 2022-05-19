@@ -7,16 +7,24 @@
 #include "PPServerRowWidget.generated.h"
 
 class UTextBlock;
-class UPPMenuWidget;
 class UButton;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnServerSelectedSignature, uint32);
 
 UCLASS()
 class PUZZLEPLATFORMS_API UPPServerRowWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+    FOnServerSelectedSignature OnServerSelected;
+
 	void SetServerName(const FText& ServerName);
-    void Setup(UPPMenuWidget* Parent, uint32 Index);
+    FText GetServerName() const;
+
+    void SetServerIndex(uint32 Index);
+    uint32 GetServerIndex() const { return ServerIndex; }
+
+    void SetSelected(bool IsSelected);
 
 protected:
 	UPROPERTY(meta=(BindWidget))
@@ -25,10 +33,18 @@ protected:
 	UPROPERTY(meta = (BindWidget))
     UButton* SelectServerButton;
 
+	void NativeOnInitialized() override;
+
 private:
     UFUNCTION()
     void OnSelectServerButtonClicked();
 
-	UPPMenuWidget* MenuWidget;
+    UFUNCTION()
+	void OnSelectServerButtonHovered();
+
+    UFUNCTION()
+    void OnSelectServerButtonUnhovered();
+
 	uint32 ServerIndex;
+    bool IsServerSelected;
 };
