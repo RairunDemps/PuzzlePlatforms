@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "PPCoreTypes.h"
 #include "PPServerRowWidget.generated.h"
 
 class UTextBlock;
 class UButton;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnServerSelectedSignature, uint32);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnServerSelectedSignature, uint32)
 
 UCLASS()
 class PUZZLEPLATFORMS_API UPPServerRowWidget : public UUserWidget
@@ -24,14 +25,23 @@ public:
     void SetServerIndex(uint32 Index);
     uint32 GetServerIndex() const { return ServerIndex; }
 
+    void SetHostUsername(const FText& HostUsername);
+    void SetConnectionFraction(int32 CurrentConnectionsCount, int32 MaximumConnectionsNumber);
+
     void SetSelected(bool IsSelected);
 
 protected:
-	UPROPERTY(meta=(BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ServerNameTextBlock;
 
 	UPROPERTY(meta = (BindWidget))
     UButton* SelectServerButton;
+
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* HostUsernameTextBlock;
+
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* ConnectionFractionTextBlock;
 
 	void NativeOnInitialized() override;
 
@@ -44,6 +54,8 @@ private:
 
     UFUNCTION()
     void OnSelectServerButtonUnhovered();
+
+    void SetServerRowTextColor(const FSlateColor& Color);
 
 	uint32 ServerIndex;
     bool IsServerSelected;

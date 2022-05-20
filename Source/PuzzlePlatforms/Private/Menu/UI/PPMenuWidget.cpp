@@ -106,19 +106,21 @@ void UPPMenuWidget::OnRefreshServerList()
     MenuInterface->RefreshServerList();
 }
 
-void UPPMenuWidget::SetServerList(TArray<FString> ServerNames)
+void UPPMenuWidget::SetServerList(TArray<FServerData> ServerData)
 {
     if (!GetWorld() || !ServerListScrollBox || !ServerRowWidgetClass) return;
 
     ServerListScrollBox->ClearChildren();
 
     uint32 index = 0;
-    for (const auto& ServerName : ServerNames)
+    for (const auto& OneServerData : ServerData)
     {
         auto ServerRowWidget = CreateWidget<UPPServerRowWidget>(GetWorld(), ServerRowWidgetClass);
         if (!ServerRowWidget) return;
         
-        ServerRowWidget->SetServerName(FText::FromString(ServerName));
+        ServerRowWidget->SetServerName(FText::FromString(OneServerData.Name));
+        ServerRowWidget->SetHostUsername(FText::FromString(OneServerData.HostUsername));
+        ServerRowWidget->SetConnectionFraction(OneServerData.CurrentPlayesCount, OneServerData.MaximumPlayerNumber);
         ServerRowWidget->SetServerIndex(index);
         ServerRowWidget->OnServerSelected.AddUObject(this, &UPPMenuWidget::OnServerSelected);
         ++index;

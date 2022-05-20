@@ -65,12 +65,16 @@ void UPPGameInstance::CreateSession()
     if (!SessionInterface.IsValid()) return;
 
     UE_LOG(LogPPGameInstance, Display, TEXT("Creating a session \"%s\"."), *SESSION_NAME.ToString());
+
+    const auto SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName().ToString();
     FOnlineSessionSettings SessionSettings;
-    SessionSettings.bIsLANMatch = false;
+
+    SessionSettings.bIsLANMatch = SubsystemName.Equals(TEXT("NULL"));
     SessionSettings.bShouldAdvertise = true;
-    SessionSettings.NumPublicConnections = 2;
+    SessionSettings.NumPublicConnections = 10;
     SessionSettings.bUsesPresence = true;
     SessionSettings.bUseLobbiesIfAvailable = true;
+    SessionSettings.Set(FName(TEXT("ServerName")), FString(TEXT("My server")), EOnlineDataAdvertisementType::Type::ViaOnlineServiceAndPing);
     SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 }
 
@@ -142,21 +146,25 @@ void UPPGameInstance::OnFindSessionsComplete(bool IsSuccessful)
 {
     if (!SessionSearch.IsValid() || !IsSuccessful) return;
 
-    TArray<FString> ServerNames;
-
-    ServerNames.Add("Test Server 1");
-    ServerNames.Add("Test Server 2");
-    ServerNames.Add("Test Server 3");
-
+    TArray<FServerData> ServerData;
     for (const auto& SearchResult : SessionSearch->SearchResults)
     {
         if (!SearchResult.IsValid()) continue;
         
-        ServerNames.Add(SearchResult.GetSessionIdStr());
+        FServerData OneServerData;
+        SearchResult.Session.SessionSettings.Get(TEXT("ServerName"), OneServerData.Name);
+        OneServerData.MaximumPlayerNumber = SearchResult.Session.SessionSettings.NumPublicConnections;
+        OneServerData.CurrentPlayesCount = OneServerData.MaximumPlayerNumber - SearchResult.Session.NumOpenPublicConnections;
+        OneServerData.HostUsername = SearchResult.Session.OwningUserName;
+
+        UE_LOG(LogPPGameInstance, Warning, TEXT("ServerData. Name %s, MaximumPlayerNumber %d, CurrentPlayesCount %d, HostUsername %s"),
+            *OneServerData.Name, OneServerData.MaximumPlayerNumber, OneServerData.CurrentPlayesCount, *OneServerData.HostUsername)
+
+        ServerData.Add(OneServerData);
     }
 
     if (!MenuWidget) return;
-    MenuWidget->SetServerList(ServerNames);
+    MenuWidget->SetServerList(ServerData);
 }
 
 void UPPGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)

@@ -34,11 +34,25 @@ void UPPServerRowWidget::SetServerIndex(uint32 Index)
     ServerIndex = Index;
 }
 
+void UPPServerRowWidget::SetHostUsername(const FText& HostUsername)
+{
+    if (!HostUsernameTextBlock) return;
+
+    HostUsernameTextBlock->SetText(HostUsername);
+}
+
+void UPPServerRowWidget::SetConnectionFraction(int32 CurrentConnectionsCount, int32 MaximumConnectionsNumber)
+{
+    if (!ConnectionFractionTextBlock) return;
+
+    ConnectionFractionTextBlock->SetText(
+        FText::FromString(*FString::Printf(TEXT("%d/%d"), CurrentConnectionsCount, MaximumConnectionsNumber)));
+}
+
 void UPPServerRowWidget::SetSelected(bool IsSelected)
 {
     IsServerSelected = IsSelected;
-    FColor Color = IsSelected ? FColor::Magenta : FColor::White;
-    ServerNameTextBlock->SetColorAndOpacity(FSlateColor(Color));
+    SetServerRowTextColor(FSlateColor(IsSelected ? FColor::Magenta : FColor::White));
 }
 
 void UPPServerRowWidget::OnSelectServerButtonClicked()
@@ -50,12 +64,20 @@ void UPPServerRowWidget::OnSelectServerButtonHovered()
 {
     if (IsServerSelected) return;
 
-    ServerNameTextBlock->SetColorAndOpacity(FSlateColor(FColor::Purple));
+    SetServerRowTextColor(FSlateColor(FColor::Purple));
 }
 
 void UPPServerRowWidget::OnSelectServerButtonUnhovered()
 {
     if (IsServerSelected) return;
 
-    ServerNameTextBlock->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+    SetServerRowTextColor(FSlateColor(FLinearColor::White));
 }
+
+void UPPServerRowWidget::SetServerRowTextColor(const FSlateColor& Color)
+{
+    ServerNameTextBlock->SetColorAndOpacity(Color);
+    HostUsernameTextBlock->SetColorAndOpacity(Color);
+    ConnectionFractionTextBlock->SetColorAndOpacity(Color);
+}
+

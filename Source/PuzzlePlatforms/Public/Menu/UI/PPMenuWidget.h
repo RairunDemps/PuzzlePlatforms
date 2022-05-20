@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Menu/UI/PPBaseWidget.h"
+#include "PPCoreTypes.h"
 #include "PPMenuWidget.generated.h"
 
 class UButton;
@@ -22,7 +23,7 @@ public:
     UPPMenuWidget(const FObjectInitializer& ObjectInitializer);
 
     void Setup() override;
-    void SetServerList(TArray<FString> ServerNames);
+    void SetServerList(TArray<FServerData> ServerData);
 
 protected:
     UPROPERTY(meta = (BindWidget))
