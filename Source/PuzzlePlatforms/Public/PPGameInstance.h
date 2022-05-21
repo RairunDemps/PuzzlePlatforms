@@ -44,8 +44,8 @@ private:
     TSubclassOf<UPPMenuWidget> MenuWidgetClass;
     TSubclassOf<UPPGamePauseWidget> GamePauseWidgetClass;
 
-    UPPMenuWidget* MenuWidget;
-    UPPGamePauseWidget* GamePauseWidget;
+    UPPMenuWidget* MenuWidget = nullptr;
+    UPPGamePauseWidget* GamePauseWidget = nullptr;
 
     IOnlineSessionPtr SessionInterface;
     TSharedPtr<FOnlineSessionSearch> SessionSearch;
@@ -57,4 +57,5 @@ private:
     void OnDestroySessionComplete(FName SessionName, bool IsSuccessful);
     void OnFindSessionsComplete(bool IsSuccessful);
     void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
+    void OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType, const FString& ErrorString);
 };

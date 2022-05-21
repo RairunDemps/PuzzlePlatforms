@@ -7,6 +7,7 @@
 #include "Menu/UI/PPGamePauseWidget.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
+#include "Engine/Engine.h"
 
 const static FName SESSION_NAME = NAME_GameSession;
 const static FName SERVER_NAME_SETTINGS_KEY = TEXT("ServerName");
@@ -37,13 +38,17 @@ void UPPGameInstance::Init()
     SessionInterface = OnlineSubsystem->GetSessionInterface();
     if (!SessionInterface.IsValid()) return;
 
-    SessionSearch = MakeShareable(new FOnlineSessionSearch());
-    if (!SessionSearch.IsValid()) return;
-
     SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPPGameInstance::OnDestroySessionComplete);
     SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPPGameInstance::OnCreateSessionComplete);
     SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPPGameInstance::OnFindSessionsComplete);
     SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UPPGameInstance::OnJoinSessionComplete);
+
+    SessionSearch = MakeShareable(new FOnlineSessionSearch());
+    if (!SessionSearch.IsValid()) return;
+
+    if (!GEngine) return;
+
+    GEngine->OnNetworkFailure().AddUObject(this, &UPPGameInstance::OnNetworkFailure);
 }
 
 void UPPGameInstance::HostGame(const FString& ServerName)
@@ -123,6 +128,12 @@ void UPPGameInstance::LoadMenu()
 
 void UPPGameInstance::LoadGamePause()
 {
+    if (GamePauseWidget)
+    {
+        GamePauseWidget->Setup();
+        return;
+    }
+
     if (!GamePauseWidgetClass) return;
 
     GamePauseWidget = CreateWidget<UPPGamePauseWidget>(this, GamePauseWidgetClass);
@@ -184,4 +195,11 @@ void UPPGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCom
     if (!Controller) return;
 
     Controller->ClientTravel(TravelURL, ETravelType::TRAVEL_Absolute);
+}
+
+void UPPGameInstance::OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType, const FString& ErrorString)
+{
+    if (!World) return;
+
+    LoadMenu();
 }
