@@ -23,7 +23,7 @@ void UPPMenuWidget::NativeOnInitialized()
 
     if (HostButton)
     {
-        HostButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnHostGame);
+        HostButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnShowHostBanner);
     }
 
     if (JoinButton)
@@ -31,9 +31,9 @@ void UPPMenuWidget::NativeOnInitialized()
         JoinButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnShowJoinBanner);
     }
 
-    if (CancelButton)
+    if (JoinCancelButton)
     {
-        CancelButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnShowMenuBanner);
+        JoinCancelButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnShowMenuBanner);
     }
 
     if (GoButton)
@@ -50,6 +50,16 @@ void UPPMenuWidget::NativeOnInitialized()
     {
         RefreshServerListButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnRefreshServerList);
     }
+    
+    if (HostCancelButton)
+    {
+        HostCancelButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnShowMenuBanner);
+    }
+
+    if (CreateButton)
+    {
+        CreateButton->OnClicked.AddDynamic(this, &UPPMenuWidget::OnHostGame);
+    }
 }
 
 void UPPMenuWidget::Setup()
@@ -61,10 +71,10 @@ void UPPMenuWidget::Setup()
 
 void UPPMenuWidget::OnHostGame()
 {
-    if (!MenuInterface) return;
+    if (!MenuInterface || !ServerNameTextBox) return;
 
     Teardown();
-    MenuInterface->HostGame();
+    MenuInterface->HostGame(ServerNameTextBox->GetText().ToString());
 }
 
 void UPPMenuWidget::OnJoinGame()
@@ -76,6 +86,13 @@ void UPPMenuWidget::OnJoinGame()
     MenuInterface->JoinGame(SelectedIndex.GetValue());
 }
 
+void UPPMenuWidget::OnShowMenuBanner()
+{
+    if (!MenuSwitcher || !MenuBanner) return;
+
+    MenuSwitcher->SetActiveWidget(MenuBanner);
+}
+
 void UPPMenuWidget::OnShowJoinBanner()
 {
     if (!MenuSwitcher || !JoinBanner || !MenuInterface) return;
@@ -84,11 +101,11 @@ void UPPMenuWidget::OnShowJoinBanner()
     MenuSwitcher->SetActiveWidget(JoinBanner);
 }
 
-void UPPMenuWidget::OnShowMenuBanner()
+void UPPMenuWidget::OnShowHostBanner()
 {
-    if (!MenuSwitcher || !MenuBanner) return;
+    if (!MenuSwitcher || !HostBanner) return;
 
-    MenuSwitcher->SetActiveWidget(MenuBanner);
+    MenuSwitcher->SetActiveWidget(HostBanner);
 }
 
 void UPPMenuWidget::OnExitGame()
@@ -103,6 +120,7 @@ void UPPMenuWidget::OnRefreshServerList()
 {
     if (!MenuInterface) return;
     
+    ServerListScrollBox->ClearChildren();
     MenuInterface->RefreshServerList();
 }
 

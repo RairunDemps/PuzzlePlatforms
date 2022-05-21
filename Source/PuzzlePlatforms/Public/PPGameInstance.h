@@ -22,7 +22,7 @@ class PUZZLEPLATFORMS_API UPPGameInstance : public UGameInstance, public IPPMenu
 public:
     UPPGameInstance(const FObjectInitializer& ObjectInitializer);
 
-    void HostGame() override;
+    void HostGame(const FString& ServerName) override;
 
     void JoinGame(uint32 ServerIndex) override;
     
@@ -36,6 +36,8 @@ public:
     UFUNCTION(BlueprintCallable)
     void LoadGamePause();
 
+    void StartSession();
+
 	void Init() override;
 
 private:
@@ -47,6 +49,8 @@ private:
 
     IOnlineSessionPtr SessionInterface;
     TSharedPtr<FOnlineSessionSearch> SessionSearch;
+
+    FString DesiredServerName;
 
     void CreateSession();
     void OnCreateSessionComplete(FName SessionName, bool IsSuccessful);

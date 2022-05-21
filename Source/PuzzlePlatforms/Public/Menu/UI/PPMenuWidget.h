@@ -42,10 +42,13 @@ protected:
     UWidget* JoinBanner;
 
     UPROPERTY(meta = (BindWidget))
+    UWidget* HostBanner;
+
+    UPROPERTY(meta = (BindWidget))
     UButton* GoButton;
 
     UPROPERTY(meta = (BindWidget))
-    UButton* CancelButton;
+    UButton* JoinCancelButton;
 
     UPROPERTY(meta = (BindWidget))
     UButton* ExitButton;
@@ -55,6 +58,15 @@ protected:
 
     UPROPERTY(meta = (BindWidget))
     UScrollBox* ServerListScrollBox;
+
+    UPROPERTY(meta = (BindWidget))
+    UEditableTextBox* ServerNameTextBox;
+
+    UPROPERTY(meta = (BindWidget))
+    UButton* HostCancelButton;
+
+    UPROPERTY(meta = (BindWidget))
+    UButton* CreateButton;
 
     void NativeOnInitialized() override;
 
@@ -66,13 +78,16 @@ private:
     TOptional<uint32> SelectedIndex;
 
     UFUNCTION()
-    void OnHostGame();
+    void OnShowMenuBanner();
 
     UFUNCTION()
     void OnShowJoinBanner();
 
     UFUNCTION()
-    void OnShowMenuBanner();
+    void OnShowHostBanner();
+
+    UFUNCTION()
+    void OnHostGame();
 
     UFUNCTION()
     void OnJoinGame();

@@ -25,6 +25,7 @@ public class PuzzlePlatforms : ModuleRules
 
 		PublicIncludePaths.AddRange(new string[]
 		{
+			"PuzzlePlatforms",
 			"PuzzlePlatforms/Public/Platforms",
 			"PuzzlePlatforms/Public/Menu",
 			"PuzzlePlatforms/Public/Menu/UI"

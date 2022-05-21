@@ -8,7 +8,8 @@
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
 
-const static FName SESSION_NAME = TEXT("My session name");
+const static FName SESSION_NAME = NAME_GameSession;
+const static FName SERVER_NAME_SETTINGS_KEY = TEXT("ServerName");
 
 DEFINE_LOG_CATEGORY_STATIC(LogPPGameInstance, All, All);
 
@@ -45,14 +46,14 @@ void UPPGameInstance::Init()
     SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UPPGameInstance::OnJoinSessionComplete);
 }
 
-void UPPGameInstance::HostGame()
+void UPPGameInstance::HostGame(const FString& ServerName)
 {
     if (!SessionInterface.IsValid()) return;
 
+    DesiredServerName = ServerName;
     const auto NamedSession = SessionInterface->GetNamedSession(SESSION_NAME);
     if (NamedSession)
     {
-        UE_LOG(LogPPGameInstance, Display, TEXT("Session \"%s\" was found."), *SESSION_NAME.ToString());
         SessionInterface->DestroySession(SESSION_NAME);
         return;
     }
@@ -64,18 +65,23 @@ void UPPGameInstance::CreateSession()
 {
     if (!SessionInterface.IsValid()) return;
 
-    UE_LOG(LogPPGameInstance, Display, TEXT("Creating a session \"%s\"."), *SESSION_NAME.ToString());
-
     const auto SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName().ToString();
     FOnlineSessionSettings SessionSettings;
 
     SessionSettings.bIsLANMatch = SubsystemName.Equals(TEXT("NULL"));
     SessionSettings.bShouldAdvertise = true;
-    SessionSettings.NumPublicConnections = 10;
+    SessionSettings.NumPublicConnections = 5;
     SessionSettings.bUsesPresence = true;
     SessionSettings.bUseLobbiesIfAvailable = true;
-    SessionSettings.Set(FName(TEXT("ServerName")), FString(TEXT("My server")), EOnlineDataAdvertisementType::Type::ViaOnlineServiceAndPing);
+    SessionSettings.Set(SERVER_NAME_SETTINGS_KEY, DesiredServerName, EOnlineDataAdvertisementType::Type::ViaOnlineServiceAndPing);
     SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
+}
+
+void UPPGameInstance::StartSession()
+{
+    if (!SessionInterface.IsValid()) return;
+
+    SessionInterface->StartSession(SESSION_NAME);
 }
 
 void UPPGameInstance::JoinGame(uint32 ServerIndex)
@@ -99,7 +105,6 @@ void UPPGameInstance::RefreshServerList()
 {
     if (!SessionInterface.IsValid() || !SessionSearch.IsValid()) return;
 
-    //SessionSearch->bIsLanQuery = false;
     SessionSearch->MaxSearchResults = 100;
     SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
     SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
@@ -131,7 +136,7 @@ void UPPGameInstance::OnCreateSessionComplete(FName SessionName, bool IsSuccessf
 {
     if (!GetWorld() || !IsSuccessful) return;
 
-    FString HostingString = FString("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
+    FString HostingString = FString("/Game/Maps/Lobby?listen");
     GetWorld()->ServerTravel(HostingString);
 }
 
@@ -152,13 +157,13 @@ void UPPGameInstance::OnFindSessionsComplete(bool IsSuccessful)
         if (!SearchResult.IsValid()) continue;
         
         FServerData OneServerData;
-        SearchResult.Session.SessionSettings.Get(TEXT("ServerName"), OneServerData.Name);
         OneServerData.MaximumPlayerNumber = SearchResult.Session.SessionSettings.NumPublicConnections;
         OneServerData.CurrentPlayesCount = OneServerData.MaximumPlayerNumber - SearchResult.Session.NumOpenPublicConnections;
         OneServerData.HostUsername = SearchResult.Session.OwningUserName;
-
-        UE_LOG(LogPPGameInstance, Warning, TEXT("ServerData. Name %s, MaximumPlayerNumber %d, CurrentPlayesCount %d, HostUsername %s"),
-            *OneServerData.Name, OneServerData.MaximumPlayerNumber, OneServerData.CurrentPlayesCount, *OneServerData.HostUsername)
+        if (!SearchResult.Session.SessionSettings.Get(SERVER_NAME_SETTINGS_KEY, OneServerData.Name))
+        {
+            OneServerData.Name = TEXT("Couldn't get server name");
+        }
 
         ServerData.Add(OneServerData);
     }
@@ -174,8 +179,6 @@ void UPPGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCom
     FString TravelURL;
     const bool IsGotConnectionString = SessionInterface->GetResolvedConnectString(SESSION_NAME, TravelURL);
     if (!IsGotConnectionString) return;
-
-    UE_LOG(LogPPGameInstance, Display, TEXT("%s"), *TravelURL);
 
     const auto Controller = GetWorld()->GetFirstPlayerController();
     if (!Controller) return;
