@@ -73,12 +73,13 @@ void UPPGameInstance::CreateSession()
     const auto SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName().ToString();
     FOnlineSessionSettings SessionSettings;
 
-    SessionSettings.bIsLANMatch = SubsystemName.Equals(TEXT("NULL"));
+    SessionSettings.bIsLANMatch = false;  // SubsystemName.Equals(TEXT("NULL"));
     SessionSettings.bShouldAdvertise = true;
     SessionSettings.NumPublicConnections = 5;
     SessionSettings.bUsesPresence = true;
     SessionSettings.bUseLobbiesIfAvailable = true;
     SessionSettings.Set(SERVER_NAME_SETTINGS_KEY, DesiredServerName, EOnlineDataAdvertisementType::Type::ViaOnlineServiceAndPing);
+    
     SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 }
 
@@ -110,6 +111,7 @@ void UPPGameInstance::RefreshServerList()
 {
     if (!SessionInterface.IsValid() || !SessionSearch.IsValid()) return;
 
+    SessionSearch->bIsLanQuery = false;
     SessionSearch->MaxSearchResults = 100;
     SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
     SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
@@ -161,6 +163,8 @@ void UPPGameInstance::OnDestroySessionComplete(FName SessionName, bool IsSuccess
 void UPPGameInstance::OnFindSessionsComplete(bool IsSuccessful)
 {
     if (!SessionSearch.IsValid() || !IsSuccessful) return;
+
+    UE_LOG(LogPPGameInstance, Display, TEXT("Len of search results %d"), SessionSearch->SearchResults.Num())
 
     TArray<FServerData> ServerData;
     for (const auto& SearchResult : SessionSearch->SearchResults)

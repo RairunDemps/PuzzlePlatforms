@@ -16,10 +16,9 @@ public class PuzzlePlatforms : ModuleRules
 			"HeadMountedDisplay",
 			"UMG",
 			"OnlineSubsystem",
-			"SlateCore"
+			"SlateCore",
+			"OnlineSubsystemSteam"
 		});
-
-		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 

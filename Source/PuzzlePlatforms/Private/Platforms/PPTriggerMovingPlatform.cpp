@@ -7,7 +7,7 @@ void APPTriggerMovingPlatform::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
 
-    if (IsAuthorative && ActiveTriggers > 0)
+    if (ActiveTriggers > 0)
     {
         Move(DeltaSeconds);
     }

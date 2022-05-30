@@ -21,12 +21,18 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     int32 FullTripTime = 10;
 
-    bool IsAuthorative = false;
-
     void Move(float DeltaSeconds);
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaSeconds) override;
 
 private:
-    float CurrentTripTime = 0.0f;
+    float CurrentTripTime;
     FVector StartLocation;
+    bool IsShowDebugScreenMessage;
+
+    UPROPERTY(ReplicatedUsing = OnRep_CurrentTripTime)
+    float ReplicatedCurrentTripTime;
+
+    UFUNCTION()
+    void OnRep_CurrentTripTime();
 };
