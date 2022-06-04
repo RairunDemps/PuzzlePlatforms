@@ -14,6 +14,12 @@ class PUZZLEPLATFORMS_API APPBaseMovingPlatform : public AStaticMeshActor
 public:
     APPBaseMovingPlatform();
 
+    UFUNCTION(Exec)
+    void ShowDebugScreenMessages();
+
+    UFUNCTION(Exec)
+    void HideDebugScreenMessages();
+
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
     FVector DestinationLocation = FVector::ZeroVector;

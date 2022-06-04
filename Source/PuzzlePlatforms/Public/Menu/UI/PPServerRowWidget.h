@@ -10,16 +10,15 @@
 class UTextBlock;
 class UButton;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnServerSelectedSignature, uint32)
-
 UCLASS()
 class PUZZLEPLATFORMS_API UPPServerRowWidget : public UUserWidget
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
+
 public:
     FOnServerSelectedSignature OnServerSelected;
 
-	void SetServerName(const FText& ServerName);
+    void SetServerName(const FText& ServerName);
     FText GetServerName() const;
 
     void SetServerIndex(uint32 Index);
@@ -31,10 +30,10 @@ public:
     void SetSelected(bool IsSelected);
 
 protected:
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* ServerNameTextBlock;
+    UPROPERTY(meta = (BindWidget))
+    UTextBlock* ServerNameTextBlock;
 
-	UPROPERTY(meta = (BindWidget))
+    UPROPERTY(meta = (BindWidget))
     UButton* SelectServerButton;
 
     UPROPERTY(meta = (BindWidget))
@@ -43,20 +42,20 @@ protected:
     UPROPERTY(meta = (BindWidget))
     UTextBlock* ConnectionFractionTextBlock;
 
-	void NativeOnInitialized() override;
+    void NativeOnInitialized() override;
 
 private:
     UFUNCTION()
     void OnSelectServerButtonClicked();
 
     UFUNCTION()
-	void OnSelectServerButtonHovered();
+    void OnSelectServerButtonHovered();
 
     UFUNCTION()
     void OnSelectServerButtonUnhovered();
 
     void SetServerRowTextColor(const FSlateColor& Color);
 
-	uint32 ServerIndex;
+    uint32 ServerIndex;
     bool IsServerSelected;
 };

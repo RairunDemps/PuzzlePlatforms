@@ -73,13 +73,13 @@ void UPPGameInstance::CreateSession()
     const auto SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName().ToString();
     FOnlineSessionSettings SessionSettings;
 
-    SessionSettings.bIsLANMatch = false;  // SubsystemName.Equals(TEXT("NULL"));
+    SessionSettings.bIsLANMatch = SubsystemName.Equals(TEXT("NULL"));
     SessionSettings.bShouldAdvertise = true;
     SessionSettings.NumPublicConnections = 5;
     SessionSettings.bUsesPresence = true;
     SessionSettings.bUseLobbiesIfAvailable = true;
     SessionSettings.Set(SERVER_NAME_SETTINGS_KEY, DesiredServerName, EOnlineDataAdvertisementType::Type::ViaOnlineServiceAndPing);
-    
+
     SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 }
 
@@ -170,7 +170,7 @@ void UPPGameInstance::OnFindSessionsComplete(bool IsSuccessful)
     for (const auto& SearchResult : SessionSearch->SearchResults)
     {
         if (!SearchResult.IsValid()) continue;
-        
+
         FServerData OneServerData;
         OneServerData.MaximumPlayerNumber = SearchResult.Session.SessionSettings.NumPublicConnections;
         OneServerData.CurrentPlayesCount = OneServerData.MaximumPlayerNumber - SearchResult.Session.NumOpenPublicConnections;
@@ -203,7 +203,7 @@ void UPPGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCom
 
 void UPPGameInstance::OnNetworkFailure(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType, const FString& ErrorString)
 {
-    if (!World) return;
+    UE_LOG(LogTemp, Error, TEXT("Network Failure Occurred: %s"), *ErrorString);
 
-    LoadMenu();
+    LoadMainMenu();
 }
