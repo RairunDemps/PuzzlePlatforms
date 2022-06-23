@@ -15,9 +15,18 @@ Demo multiplayer puzzle game based on ThirdPerson template with hosting, joining
 </ul>
 
 <h2>Demonstration</h2>
-<h3>Hosting session</h2>
+<h3>Host session</h2>
+<p align="center">
+	<img src="Images/HostSession.gif" alt="Host session">
+</p>
 <h3>Join session</h2>
+<p align="center">
+	<img src="Images/JoinSession.gif" alt="Join session">
+</p>
 <h3>Gameplay</h2>
+<p align="center">
+	<img src="Images/Gameplay.gif" alt="Gameplay">
+</p>
 
 <h2>Controls</h2>
 <ul>
