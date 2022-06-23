@@ -70,10 +70,10 @@ void UPPGameInstance::CreateSession()
 {
     if (!SessionInterface.IsValid()) return;
 
-    const auto SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName().ToString();
+    const auto SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName();
     FOnlineSessionSettings SessionSettings;
 
-    SessionSettings.bIsLANMatch = SubsystemName.Equals(TEXT("NULL"));
+    SessionSettings.bIsLANMatch = SubsystemName.IsEqual(TEXT("NULL"), ENameCase::CaseSensitive);
     SessionSettings.bShouldAdvertise = true;
     SessionSettings.NumPublicConnections = 5;
     SessionSettings.bUsesPresence = true;
@@ -111,7 +111,9 @@ void UPPGameInstance::RefreshServerList()
 {
     if (!SessionInterface.IsValid() || !SessionSearch.IsValid()) return;
 
-    SessionSearch->bIsLanQuery = false;
+    const auto SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName();
+
+    SessionSearch->bIsLanQuery = SubsystemName.IsEqual(TEXT("NULL"), ENameCase::CaseSensitive);
     SessionSearch->MaxSearchResults = 100;
     SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
     SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
