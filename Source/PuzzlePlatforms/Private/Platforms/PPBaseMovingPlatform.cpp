@@ -20,7 +20,6 @@ void APPBaseMovingPlatform::BeginPlay()
 
     StartLocation = GetActorLocation();
     CurrentTripTime = 0.0f;
-    IsShowDebugScreenMessage = false;
 }
 
 void APPBaseMovingPlatform::Tick(float DeltaSeconds)
@@ -30,13 +29,6 @@ void APPBaseMovingPlatform::Tick(float DeltaSeconds)
     if (HasAuthority())
     {
         ReplicatedCurrentTripTime = CurrentTripTime;
-    }
-    
-    if (IsShowDebugScreenMessage)
-    {
-        FString RoleString;
-        UEnum::GetValueAsString(GetLocalRole(), RoleString);
-        DrawDebugString(GetWorld(), FVector(0.0f, 0.0f, 100.0f), RoleString, this, FColor::White, DeltaSeconds);
     }
 }
 
@@ -67,14 +59,4 @@ void APPBaseMovingPlatform::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 void APPBaseMovingPlatform::OnRep_CurrentTripTime()
 {
     CurrentTripTime = ReplicatedCurrentTripTime;
-}
-
-void APPBaseMovingPlatform::ShowDebugScreenMessages()
-{
-    IsShowDebugScreenMessage = true;
-}
-
-void APPBaseMovingPlatform::HideDebugScreenMessages()
-{
-    IsShowDebugScreenMessage = false;
 }
