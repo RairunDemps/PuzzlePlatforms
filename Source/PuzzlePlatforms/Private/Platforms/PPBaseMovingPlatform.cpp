@@ -18,11 +18,6 @@ void APPBaseMovingPlatform::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (HasAuthority())
-    {
-        NetUpdateFrequency = 0.5f;
-    }
-
     StartLocation = GetActorLocation();
     CurrentTripTime = 0.0f;
     IsShowDebugScreenMessage = false;
@@ -47,8 +42,8 @@ void APPBaseMovingPlatform::Tick(float DeltaSeconds)
 
 void APPBaseMovingPlatform::Move(float DeltaSeconds)
 {
+    const float Frequency = (2 * PI) / FullTripTime;
     FVector CurrentLocation = GetActorLocation();
-    float Frequency = (2 * PI) / FullTripTime;
 
     CurrentTripTime += DeltaSeconds;
 

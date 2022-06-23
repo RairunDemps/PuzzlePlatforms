@@ -81,7 +81,6 @@ void UPPMenuWidget::OnJoinGame()
 {
     if (!MenuInterface || !SelectedIndex.IsSet()) return;
 
-    UE_LOG(LogPPMenuWidget, Display, TEXT("Selected level index is %d"), SelectedIndex.GetValue());
     Teardown();
     MenuInterface->JoinGame(SelectedIndex.GetValue());
 }
@@ -110,7 +109,7 @@ void UPPMenuWidget::OnShowHostBanner()
 
 void UPPMenuWidget::OnExitGame()
 {
-    const auto Controller = GetPlayerController();
+    APlayerController* const Controller = GetPlayerController();
     if (!Controller) return;
 
     Controller->ConsoleCommand("quit");
@@ -129,11 +128,10 @@ void UPPMenuWidget::SetServerList(TArray<FServerData> ServerData)
     if (!GetWorld() || !ServerListScrollBox || !ServerRowWidgetClass) return;
 
     ServerListScrollBox->ClearChildren();
-
     uint32 index = 0;
-    for (const auto& OneServerData : ServerData)
+    for (const FServerData& OneServerData : ServerData)
     {
-        auto ServerRowWidget = CreateWidget<UPPServerRowWidget>(GetWorld(), ServerRowWidgetClass);
+        UPPServerRowWidget* const ServerRowWidget = CreateWidget<UPPServerRowWidget>(GetWorld(), ServerRowWidgetClass);
         if (!ServerRowWidget) return;
         
         ServerRowWidget->SetServerName(FText::FromString(OneServerData.Name));
@@ -141,22 +139,20 @@ void UPPMenuWidget::SetServerList(TArray<FServerData> ServerData)
         ServerRowWidget->SetConnectionFraction(OneServerData.CurrentPlayesCount, OneServerData.MaximumPlayerNumber);
         ServerRowWidget->SetServerIndex(index);
         ServerRowWidget->OnServerSelected.AddUObject(this, &UPPMenuWidget::OnServerSelected);
-        ++index;
-
         ServerListScrollBox->AddChild(ServerRowWidget);
+        ++index;
     }
 }
 
 void UPPMenuWidget::OnServerSelected(uint32 Index)
 {
     SelectedIndex = Index;
-
     for (int i = 0; i < ServerListScrollBox->GetChildrenCount(); ++i)
     {
-        const auto ServerRowWidget = Cast<UPPServerRowWidget>(ServerListScrollBox->GetChildAt(i));
+        UPPServerRowWidget* const ServerRowWidget = Cast<UPPServerRowWidget>(ServerListScrollBox->GetChildAt(i));
         if (!ServerRowWidget) continue;
 
-        bool IsSelected = ServerRowWidget->GetServerIndex() == Index;
+        const bool IsSelected = ServerRowWidget->GetServerIndex() == Index;
         ServerRowWidget->SetSelected(IsSelected);
     }
 }

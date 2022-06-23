@@ -12,9 +12,8 @@ APPPLatformTrigger::APPPLatformTrigger()
 	PrimaryActorTick.bCanEverTick = true;
 
 	TriggerBoxComponent = CreateDefaultSubobject<UBoxComponent>("TriggerBoxComponent");
-    RootComponent = TriggerBoxComponent;
-
-	TriggerBoxComponent->SetGenerateOverlapEvents(true);
+    TriggerBoxComponent->SetGenerateOverlapEvents(true);
+    SetRootComponent(TriggerBoxComponent);
 }
 
 void APPPLatformTrigger::BeginPlay()
@@ -39,16 +38,13 @@ void APPPLatformTrigger::OnComponentBeginOverlap(UPrimitiveComponent* Overlapped
 
     TArray<AActor*> TriggerMovingPlatforms;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), TriggerMovingPlatformClass, TriggerMovingPlatforms);
-
-    for (auto Platform : TriggerMovingPlatforms)
+    for (AActor* const Platform : TriggerMovingPlatforms)
     {
-        auto TriggerMovingPlatform = Cast<APPTriggerMovingPlatform>(Platform);
+        APPTriggerMovingPlatform* const TriggerMovingPlatform = Cast<APPTriggerMovingPlatform>(Platform);
         if (!TriggerMovingPlatform) continue;
 
         TriggerMovingPlatform->AddActiveTrigger();
     }
-
-    UE_LOG(LogPPPlatformTrigger, Warning, TEXT("Trigger Box begin overlap"))
 }
 
 void APPPLatformTrigger::OnComponentEndOverlap(
@@ -58,14 +54,11 @@ void APPPLatformTrigger::OnComponentEndOverlap(
 
     TArray<AActor*> TriggerMovingPlatforms;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), TriggerMovingPlatformClass, TriggerMovingPlatforms);
-
-    for (auto Platform : TriggerMovingPlatforms)
+    for (AActor* const Platform : TriggerMovingPlatforms)
     {
-        auto TriggerMovingPlatform = Cast<APPTriggerMovingPlatform>(Platform);
+        APPTriggerMovingPlatform* const TriggerMovingPlatform = Cast<APPTriggerMovingPlatform>(Platform);
         if (!TriggerMovingPlatform) continue;
 
         TriggerMovingPlatform->RemoveActiveTrigger();
     }
-
-    UE_LOG(LogPPPlatformTrigger, Warning, TEXT("Trigger Box end overlap"))
 }

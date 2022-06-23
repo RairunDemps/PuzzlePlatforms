@@ -36,12 +36,11 @@ void APPLobbyGameMode::TravelToTheLevel()
 {
     if (!GetWorld()) return;
 
-    const auto PPGameInstance = GetGameInstance<UPPGameInstance>();
+    UPPGameInstance* const PPGameInstance = GetGameInstance<UPPGameInstance>();
     if (!PPGameInstance) return;
 
     bUseSeamlessTravel = true;
     FString HostingString = FString("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
-    
     PPGameInstance->StartSession();
     GetWorld()->ServerTravel(HostingString);
 }

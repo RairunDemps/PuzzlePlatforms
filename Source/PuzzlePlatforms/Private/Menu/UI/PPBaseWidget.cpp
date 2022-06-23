@@ -11,24 +11,21 @@ void UPPBaseWidget::SetMenuInterface(IPPMenuInterface* MenuInterfaceInstance)
 
 void UPPBaseWidget::Setup()
 {
-    const auto Controller = GetPlayerController();
+    APlayerController* const Controller = GetPlayerController();
     if (!Controller) return;
 
     bIsFocusable = true;
-
     FInputModeUIOnly InputModeData;
     InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
     InputModeData.SetWidgetToFocus(TakeWidget());
-
     Controller->SetInputMode(InputModeData);
     Controller->bShowMouseCursor = true;
-
     AddToViewport();
 }
 
 void UPPBaseWidget::Teardown()
 {
-    const auto Controller = GetPlayerController();
+    APlayerController* const Controller = GetPlayerController();
     if (!Controller) return;
 
     Controller->SetInputMode(FInputModeGameOnly());

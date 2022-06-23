@@ -31,7 +31,7 @@ UPPGameInstance::UPPGameInstance(const FObjectInitializer& ObjectInitializer)
 
 void UPPGameInstance::Init()
 {
-    const auto OnlineSubsystem = IOnlineSubsystem::Get();
+    IOnlineSubsystem* const OnlineSubsystem = IOnlineSubsystem::Get();
     if (!OnlineSubsystem) return;
 
     UE_LOG(LogPPGameInstance, Display, TEXT("Online subsystem found - %s"), *OnlineSubsystem->GetSubsystemName().ToString())
@@ -56,7 +56,7 @@ void UPPGameInstance::HostGame(const FString& ServerName)
     if (!SessionInterface.IsValid()) return;
 
     DesiredServerName = ServerName;
-    const auto NamedSession = SessionInterface->GetNamedSession(SESSION_NAME);
+    FNamedOnlineSession* const NamedSession = SessionInterface->GetNamedSession(SESSION_NAME);
     if (NamedSession)
     {
         SessionInterface->DestroySession(SESSION_NAME);
@@ -70,16 +70,14 @@ void UPPGameInstance::CreateSession()
 {
     if (!SessionInterface.IsValid()) return;
 
-    const auto SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName();
+    const FName SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName();
     FOnlineSessionSettings SessionSettings;
-
     SessionSettings.bIsLANMatch = SubsystemName.IsEqual(TEXT("NULL"), ENameCase::CaseSensitive);
     SessionSettings.bShouldAdvertise = true;
     SessionSettings.NumPublicConnections = 5;
     SessionSettings.bUsesPresence = true;
     SessionSettings.bUseLobbiesIfAvailable = true;
     SessionSettings.Set(SERVER_NAME_SETTINGS_KEY, DesiredServerName, EOnlineDataAdvertisementType::Type::ViaOnlineServiceAndPing);
-
     SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 }
 
@@ -101,7 +99,7 @@ void UPPGameInstance::LoadMainMenu()
 {
     if (!GetWorld()) return;
 
-    const auto Controller = GetWorld()->GetFirstPlayerController();
+    APlayerController* const Controller = GetWorld()->GetFirstPlayerController();
     if (!Controller) return;
 
     Controller->ClientTravel("/Game/Menu/MenuLevel", ETravelType::TRAVEL_Absolute);
@@ -111,8 +109,7 @@ void UPPGameInstance::RefreshServerList()
 {
     if (!SessionInterface.IsValid() || !SessionSearch.IsValid()) return;
 
-    const auto SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName();
-
+    const FName SubsystemName = IOnlineSubsystem::Get()->GetSubsystemName();
     SessionSearch->bIsLanQuery = SubsystemName.IsEqual(TEXT("NULL"), ENameCase::CaseSensitive);
     SessionSearch->MaxSearchResults = 100;
     SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
@@ -151,7 +148,7 @@ void UPPGameInstance::OnCreateSessionComplete(FName SessionName, bool IsSuccessf
 {
     if (!GetWorld() || !IsSuccessful) return;
 
-    FString HostingString = FString("/Game/Maps/Lobby?listen");
+    const FString HostingString = FString("/Game/Maps/Lobby?listen");
     GetWorld()->ServerTravel(HostingString);
 }
 
@@ -166,10 +163,8 @@ void UPPGameInstance::OnFindSessionsComplete(bool IsSuccessful)
 {
     if (!SessionSearch.IsValid() || !IsSuccessful) return;
 
-    UE_LOG(LogPPGameInstance, Display, TEXT("Len of search results %d"), SessionSearch->SearchResults.Num())
-
     TArray<FServerData> ServerData;
-    for (const auto& SearchResult : SessionSearch->SearchResults)
+    for (const FOnlineSessionSearchResult& SearchResult : SessionSearch->SearchResults)
     {
         if (!SearchResult.IsValid()) continue;
 
@@ -197,7 +192,7 @@ void UPPGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCom
     const bool IsGotConnectionString = SessionInterface->GetResolvedConnectString(SESSION_NAME, TravelURL);
     if (!IsGotConnectionString) return;
 
-    const auto Controller = GetWorld()->GetFirstPlayerController();
+    APlayerController* const Controller = GetWorld()->GetFirstPlayerController();
     if (!Controller) return;
 
     Controller->ClientTravel(TravelURL, ETravelType::TRAVEL_Absolute);

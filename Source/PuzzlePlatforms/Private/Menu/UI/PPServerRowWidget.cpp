@@ -9,12 +9,16 @@ void UPPServerRowWidget::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
 
-    if (!SelectServerButton) return;
-    SelectServerButton->OnClicked.AddDynamic(this, &UPPServerRowWidget::OnSelectServerButtonClicked);
+    if (SelectServerButton)
+    {
+        SelectServerButton->OnClicked.AddDynamic(this, &UPPServerRowWidget::OnSelectServerButtonClicked);
+    }
 
-    if (!ServerNameTextBlock) return;
-    SelectServerButton->OnHovered.AddDynamic(this, &UPPServerRowWidget::OnSelectServerButtonHovered);
-    SelectServerButton->OnUnhovered.AddDynamic(this, &UPPServerRowWidget::OnSelectServerButtonUnhovered);
+    if (ServerNameTextBlock)
+    {
+        SelectServerButton->OnHovered.AddDynamic(this, &UPPServerRowWidget::OnSelectServerButtonHovered);
+        SelectServerButton->OnUnhovered.AddDynamic(this, &UPPServerRowWidget::OnSelectServerButtonUnhovered);
+    }
 }
 
 void UPPServerRowWidget::SetServerName(const FText& ServerName)
