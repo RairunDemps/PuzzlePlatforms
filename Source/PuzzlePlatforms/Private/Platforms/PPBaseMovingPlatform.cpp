@@ -39,12 +39,17 @@ void APPBaseMovingPlatform::Move(float DeltaSeconds)
 
     CurrentTripTime += DeltaSeconds;
 
-    CurrentLocation.X = StartLocation.X + (DestinationLocation.X - StartLocation.X) *
-                                                FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
-    CurrentLocation.Y = StartLocation.Y + (DestinationLocation.Y - StartLocation.Y) *
-                                                FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
-    CurrentLocation.Z = StartLocation.Z + (DestinationLocation.Z - StartLocation.Z) *
-                                                FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
+    //CurrentLocation.X = StartLocation.X + (DestinationLocation.X - StartLocation.X) *
+    //                                            FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
+    //CurrentLocation.Y = StartLocation.Y + (DestinationLocation.Y - StartLocation.Y) *
+    //                                            FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
+    //CurrentLocation.Z = StartLocation.Z + (DestinationLocation.Z - StartLocation.Z) *
+    //                                            FMath::Abs(FMath::Sin((Frequency * CurrentTripTime) - PI / 2.0f) + 1) / 2.0f;
+
+    float LocationCoefficient = FMath::Abs(1 - FMath::Cos(Frequency * CurrentTripTime)) / 2.0f;
+    CurrentLocation.X = StartLocation.X + (DestinationLocation.X - StartLocation.X) * LocationCoefficient;
+    CurrentLocation.Y = StartLocation.Y + (DestinationLocation.Y - StartLocation.Y) * LocationCoefficient;
+    CurrentLocation.Z = StartLocation.Z + (DestinationLocation.Z - StartLocation.Z) * LocationCoefficient;
 
     SetActorLocation(CurrentLocation);
 }
